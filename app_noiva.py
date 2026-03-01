@@ -110,10 +110,19 @@ html_final = """
             </div>
 
             <div class="space-y-6">
-                <div class="bg-slate-900 text-white p-8 rounded-3xl shadow-xl text-center border-b-8 border-amber-600">
-                    <p class="text-gray-400 text-xs font-bold uppercase mb-2">Total Estimado</p>
-                    <h2 id="total-display" class="text-4xl font-bold text-amber-500">R$ 0,00</h2>
-                    <p id="itens-count" class="text-gray-500 mt-2 text-sm">Nenhum item</p>
+                <div class="bg-slate-900 text-white p-8 rounded-3xl shadow-xl border-b-8 border-amber-600">
+                    <div class="text-center mb-6">
+                        <p class="text-gray-400 text-xs font-bold uppercase mb-2">Total Estimado</p>
+                        <h2 id="total-display" class="text-4xl font-bold text-amber-500">R$ 0,00</h2>
+                        <p id="itens-count" class="text-gray-500 mt-2 text-sm">Nenhum item</p>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-700">
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">Orçamento Disponível (R$):</label>
+                        <input type="number" id="input-orcamento-cliente" oninput="calcularSaldo()" class="w-full p-3 rounded-xl bg-slate-800 text-white border border-slate-600 outline-none focus:border-amber-500 text-center text-lg" placeholder="Qual o limite do cliente?">
+                        <div id="saldo-display" class="mt-4 text-sm font-bold hidden p-3 rounded-xl text-center transition-all"></div>
+                    </div>
+
                     <button id="btn-pdf" onclick="gerarPDF()" class="hidden mt-6 w-full bg-amber-600 hover:bg-amber-500 p-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2">📥 BAIXAR PROPOSTA (PDF)</button>
                 </div>
 
@@ -139,6 +148,7 @@ html_final = """
 
         let orcamento = [];
         let selecionadoId = null;
+        let totalAtual = 0; // Guardar o total para o saldo
 
         const selectP = document.getElementById('qtd-parcelas');
         for(let i=1; i<=24; i++) {
@@ -202,7 +212,6 @@ html_final = """
         function setServico(id) { 
             selecionadoId = id; 
             document.getElementById('container-nome-servico').classList.toggle('hidden', id !== 'outro');
-
             if(id === 'convidados') {
                 document.getElementById('container-convidados').classList.remove('hidden');
                 document.getElementById('container-valor-padrao').classList.add('hidden');
@@ -222,9 +231,7 @@ html_final = """
 
             let s = servicosBase.find(x => x.id === selecionadoId);
             let nomeFinal = s.nome;
-            let valorBase = 0;
-            let qtd = 1;
-            let valorUnit = 0;
+            let valorBase = 0; let qtd = 1; let valorUnit = 0;
 
             if(selecionadoId === 'outro') {
                 nomeFinal = document.getElementById('input-nome-servico').value || 'Serviço Extra';
@@ -241,7 +248,6 @@ html_final = """
                 if(!valorBase) return alert("Preencha o valor do serviço!");
             }
 
-            // CALCULO DE JUROS E VALOR DA PARCELA
             let valorFinal = modo === 'parcelado' ? valorBase * (1 + ((juros/100) * vezes)) : valorBase;
             let valorParcela = modo === 'parcelado' ? valorFinal / vezes : valorFinal;
 
@@ -293,29 +299,45 @@ html_final = """
             showToast("Modo Edição");
         }
 
+        // FUNÇÃO NOVA: CALCULA O SALDO DO CLIENTE
+        function calcularSaldo() {
+            const budget = parseFloat(document.getElementById('input-orcamento-cliente').value) || 0;
+            const display = document.getElementById('saldo-display');
+
+            if (budget > 0) {
+                display.classList.remove('hidden');
+                const diferenca = budget - totalAtual;
+
+                if (diferenca >= 0) {
+                    display.className = 'mt-4 text-sm font-bold p-3 rounded-xl bg-green-500/20 text-green-400 border border-green-500/30 text-center transition-all';
+                    display.innerText = `✅ Sobram: R$ ${diferenca.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                } else {
+                    display.className = 'mt-4 text-sm font-bold p-3 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 text-center transition-all';
+                    display.innerText = `⚠️ Passou do Limite: R$ ${Math.abs(diferenca).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                }
+            } else {
+                display.classList.add('hidden');
+            }
+        }
+
         function atualizarUI() {
             const lista = document.getElementById('lista-real');
-            let total = 0;
+            totalAtual = 0; // Zera o total para recalcular
+
             if(orcamento.length === 0) {
                 lista.innerHTML = '<p class="text-gray-400 text-center py-4 italic text-sm">Sua lista está vazia</p>';
                 document.getElementById('btn-pdf').classList.add('hidden');
             } else {
                 document.getElementById('btn-pdf').classList.remove('hidden');
                 lista.innerHTML = orcamento.map((item, idx) => {
-                    total += item.valorFinal;
+                    totalAtual += item.valorFinal;
                     let txtDetalhe = item.id === 'convidados' ? `${item.qtd}x R$ ${item.valorUnit.toLocaleString('pt-BR', {minimumFractionDigits: 2})} | ` : '';
-
-                    if (item.modo === 'avista') {
-                        txtDetalhe += 'À vista';
-                    } else {
-                        txtDetalhe += `${item.vezes}x de R$ ${item.valorParcela.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${item.juros}% a.m.)`;
-                    }
+                    if (item.modo === 'avista') txtDetalhe += 'À vista';
+                    else txtDetalhe += `${item.vezes}x de R$ ${item.valorParcela.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${item.juros}% a.m.)`;
 
                     return `<div class="bg-gray-50 p-4 rounded-2xl border-l-4 border-amber-500 flex justify-between items-center group">
-                                <div>
-                                    <p class="font-bold text-sm text-gray-800">${item.nome}</p>
-                                    <p class="text-[11px] text-gray-500 mt-1">${txtDetalhe}</p>
-                                </div>
+                                <div><p class="font-bold text-sm text-gray-800">${item.nome}</p>
+                                <p class="text-[11px] text-gray-500 mt-1">${txtDetalhe}</p></div>
                                 <div class="flex items-center gap-3">
                                     <p class="font-bold text-amber-600 text-sm">R$ ${item.valorFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
                                     <button onclick="editarItem(${idx})" class="text-blue-400 hover:text-blue-600 transition-colors">✎</button>
@@ -324,8 +346,11 @@ html_final = """
                             </div>`;
                 }).join('');
             }
-            document.getElementById('total-display').innerText = "R$ " + total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('total-display').innerText = "R$ " + totalAtual.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('itens-count').innerText = orcamento.length + " serviços";
+
+            // Recalcula o saldo sempre que a UI atualizar
+            calcularSaldo();
         }
 
         function showToast(msg) {
@@ -338,23 +363,40 @@ html_final = """
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const nomeE = document.getElementById('display-titulo').innerText;
+            const budget = parseFloat(document.getElementById('input-orcamento-cliente').value) || 0;
+
             doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 40, 'F');
             doc.setTextColor(212, 160, 23); doc.setFontSize(22); doc.text("EVENTMASTER PRO", 20, 25);
             doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.text(`PROPOSTA: ${nomeE}`, 20, 33);
 
             const rows = orcamento.map(i => {
                 let txtCalc = i.id === 'convidados' ? `${i.qtd}x R$ ${i.valorUnit.toLocaleString('pt-BR', {minimumFractionDigits: 2})} ` : '';
-                if (i.modo === 'avista') {
-                    txtCalc += '(À vista)';
-                } else {
-                    txtCalc += `| ${i.vezes}x de R$ ${i.valorParcela.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (juros ${i.juros}% a.m.)`;
-                }
+                txtCalc += i.modo === 'avista' ? '(À vista)' : `| ${i.vezes}x de R$ ${i.valorParcela.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (juros ${i.juros}%)`;
                 return [i.nome, txtCalc, `R$ ${i.valorFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`];
             });
 
             doc.autoTable({ startY: 50, head: [['Serviço', 'Cálculo', 'Total']], body: rows, headStyles: { fillColor: [212, 160, 23] } });
-            doc.setFontSize(16); doc.setTextColor(30, 41, 59);
-            doc.text(`TOTAL FINAL: ${document.getElementById('total-display').innerText}`, 20, doc.lastAutoTable.finalY + 15);
+
+            let finalY = doc.lastAutoTable.finalY + 15;
+            doc.setFontSize(14); doc.setTextColor(30, 41, 59);
+            doc.text(`TOTAL FINAL: ${document.getElementById('total-display').innerText}`, 20, finalY);
+
+            // INCLUI O SALDO NO PDF SE O CLIENTE DEU O ORÇAMENTO
+            if(budget > 0) {
+                finalY += 10;
+                doc.setFontSize(12);
+                doc.text(`Orçamento Disponível: R$ ${budget.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, finalY);
+                finalY += 8;
+                const diferenca = budget - totalAtual;
+                if(diferenca >= 0) {
+                    doc.setTextColor(0, 128, 0); // Verde
+                    doc.text(`Saldo Restante: R$ ${diferenca.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, finalY);
+                } else {
+                    doc.setTextColor(200, 0, 0); // Vermelho
+                    doc.text(`Valor Excedente: R$ ${Math.abs(diferenca).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, finalY);
+                }
+            }
+
             doc.save(`Orcamento_${nomeE.replace(/ /g, '_')}.pdf`);
         }
     </script>
@@ -362,4 +404,4 @@ html_final = """
 </html>
 """
 
-components.html(html_final, height=1000, scrolling=True)
+components.html(html_final, height=1100, scrolling=True)
