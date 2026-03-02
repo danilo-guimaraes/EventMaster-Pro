@@ -34,8 +34,15 @@ html_final = """
     <div id="config-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
         <div class="bg-white rounded-3xl p-10 max-w-md w-full mx-4 card-shadow text-center">
             <div id="config-icon" class="w-16 h-16 gradient-gold rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl shadow-lg">💍</div>
-            <h2 class="font-display text-2xl font-bold mb-2">Configurar Evento</h2>
-            <div class="text-left space-y-4 mt-6">
+            <h2 class="font-display text-2xl font-bold mb-2">Acessar Orçamento</h2>
+            <p id="modal-desc" class="text-sm text-gray-500 mb-6">Seus dados ficam salvos no seu aparelho.</p>
+
+            <div class="text-left space-y-4">
+                <div id="container-celular">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">📱 Seu Celular (WhatsApp)</label>
+                    <input type="tel" id="input-celular" maxlength="15" class="w-full p-4 border-2 border-amber-200 rounded-xl outline-none focus:border-amber-500 font-bold text-gray-800" placeholder="(21) 90000-0000">
+                </div>
+
                 <input type="text" id="input-nome" class="w-full p-4 border-2 border-gray-100 rounded-xl outline-none focus:border-amber-500" placeholder="Nome do Cliente/Evento">
                 <select id="input-tipo" onchange="updateConfigUI()" class="w-full p-4 border-2 border-gray-100 rounded-xl bg-white outline-none">
                     <option value="💍 Casamento">💍 Casamento</option>
@@ -44,7 +51,8 @@ html_final = """
                     <option value="outro">✨ Outro Evento...</option>
                 </select>
                 <input type="text" id="input-outro-tipo" class="hidden w-full p-4 border-2 border-gray-100 rounded-xl outline-none focus:border-amber-500" placeholder="Qual o tipo de festa?">
-                <button onclick="iniciarApp()" class="w-full btn-primary p-4 mt-4 shadow-lg">Salvar Configuração →</button>
+
+                <button id="btn-modal" onclick="iniciarApp()" class="w-full btn-primary p-4 mt-4 shadow-lg">Entrar no Sistema →</button>
             </div>
         </div>
     </div>
@@ -58,7 +66,10 @@ html_final = """
                     <p id="display-sub" class="text-sm text-gray-500 italic"></p>
                 </div>
             </div>
-            <button onclick="abrirConfig()" class="bg-gray-100 hover:bg-gray-200 p-2 px-4 rounded-xl font-bold text-gray-600 flex items-center gap-2 transition-all">⚙️ Editar Título</button>
+            <div class="flex gap-2">
+                <button onclick="abrirConfig()" class="bg-gray-100 hover:bg-gray-200 p-2 px-4 rounded-xl font-bold text-gray-600 transition-all hidden sm:block">⚙️ Editar</button>
+                <button onclick="sairSessao()" class="bg-red-50 hover:bg-red-100 p-2 px-4 rounded-xl font-bold text-red-600 transition-all">🚪 Sair</button>
+            </div>
         </header>
 
         <div class="grid lg:grid-cols-3 gap-8">
@@ -119,7 +130,7 @@ html_final = """
 
                     <div class="pt-6 border-t border-slate-700">
                         <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">Orçamento Disponível (R$):</label>
-                        <input type="number" id="input-orcamento-cliente" oninput="calcularSaldo()" class="w-full p-3 rounded-xl bg-slate-800 text-white border border-slate-600 outline-none focus:border-amber-500 text-center text-lg" placeholder="Qual o limite do cliente?">
+                        <input type="number" id="input-orcamento-cliente" oninput="calcularSaldo(); salvarSessao();" class="w-full p-3 rounded-xl bg-slate-800 text-white border border-slate-600 outline-none focus:border-amber-500 text-center text-lg" placeholder="Limite do cliente?">
                         <div id="saldo-display" class="mt-4 text-sm font-bold hidden p-3 rounded-xl text-center transition-all"></div>
                     </div>
 
@@ -148,7 +159,14 @@ html_final = """
 
         let orcamento = [];
         let selecionadoId = null;
-        let totalAtual = 0; // Guardar o total para o saldo
+        let totalAtual = 0;
+        let telefoneLogado = null;
+        let isEditandoConfig = false; // FLAG PARA CORRIGIR O BUG
+
+        document.getElementById('input-celular').addEventListener('input', function (e) {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        });
 
         const selectP = document.getElementById('qtd-parcelas');
         for(let i=1; i<=24; i++) {
@@ -166,13 +184,72 @@ html_final = """
             else iconDiv.innerText = '🎭';
         }
 
-        function abrirConfig() { document.getElementById('config-modal').classList.remove('hidden'); }
+        // FUNÇÃO ABRIR CONFIGURAÇÃO (AGORA PREENCHE COM O NOME ATUAL)
+        function abrirConfig() { 
+            isEditandoConfig = true;
+            document.getElementById('config-modal').classList.remove('hidden'); 
+            document.getElementById('container-celular').classList.add('hidden'); // Esconde o celular
+            document.getElementById('modal-desc').innerText = "Atualize os detalhes do evento.";
+            document.getElementById('btn-modal').innerText = "Salvar Alterações →";
+            document.getElementById('input-nome').value = document.getElementById('display-titulo').innerText;
+        }
+
+        function sairSessao() {
+            telefoneLogado = null;
+            isEditandoConfig = false;
+            document.getElementById('input-celular').value = '';
+            document.getElementById('container-celular').classList.remove('hidden');
+            document.getElementById('btn-modal').innerText = "Entrar no Sistema →";
+            document.getElementById('modal-desc').innerText = "Seus dados ficam salvos no seu aparelho.";
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('config-modal').classList.remove('hidden');
+            orcamento = [];
+            atualizarUI();
+        }
 
         function iniciarApp() {
+            // SE NÃO ESTIVER EDITANDO, FAZ O LOGIN NORMAL
+            if (!isEditandoConfig) {
+                const celularRaw = document.getElementById('input-celular').value.replace(/\D/g, '');
+                if(celularRaw.length !== 11) return alert("⚠️ Por favor, digite um celular válido com DDD (Ex: 21988887777).");
+                telefoneLogado = celularRaw;
+
+                const savedData = localStorage.getItem('em_data_' + telefoneLogado);
+                const savedConfig = localStorage.getItem('em_config_' + telefoneLogado);
+
+                if(savedData && savedConfig) {
+                    orcamento = JSON.parse(savedData);
+                    const cfg = JSON.parse(savedConfig);
+                    document.getElementById('display-titulo').innerText = cfg.nome;
+                    document.getElementById('display-sub').innerText = cfg.tipo;
+                    document.getElementById('header-icon').innerText = cfg.icone;
+                    document.getElementById('input-orcamento-cliente').value = cfg.budget || '';
+                    document.getElementById('input-nome').value = cfg.nome; 
+                    showToast("Sessão recuperada!");
+                } else {
+                    aplicarConfigDaTela();
+                    orcamento = [];
+                    showToast("Sessão iniciada!");
+                }
+            } else {
+                // SE ESTIVER EDITANDO, APENAS ATUALIZA COM OS DADOS DA TELA
+                aplicarConfigDaTela();
+                showToast("Nome do evento atualizado!");
+            }
+
+            // FECHA O MODAL E SALVA
+            document.getElementById('config-modal').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            isEditandoConfig = false; // Reseta a flag
+            renderGrid();
+            atualizarUI(); 
+            salvarSessao();
+        }
+
+        function aplicarConfigDaTela() {
             const nome = document.getElementById('input-nome').value || 'Cliente Master';
             const tipoRaw = document.getElementById('input-tipo').value;
-            let tipoFinal = tipoRaw;
-            let iconeFinal = '💍';
+            let tipoFinal = tipoRaw; let iconeFinal = '💍';
 
             if(tipoRaw === 'outro') {
                 tipoFinal = document.getElementById('input-outro-tipo').value || 'Evento Especial';
@@ -185,9 +262,18 @@ html_final = """
             document.getElementById('display-titulo').innerText = nome;
             document.getElementById('display-sub').innerText = tipoFinal;
             document.getElementById('header-icon').innerText = iconeFinal;
-            document.getElementById('config-modal').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            renderGrid();
+        }
+
+        function salvarSessao() {
+            if(!telefoneLogado) return;
+            const config = {
+                nome: document.getElementById('display-titulo').innerText,
+                tipo: document.getElementById('display-sub').innerText,
+                icone: document.getElementById('header-icon').innerText,
+                budget: document.getElementById('input-orcamento-cliente').value
+            };
+            localStorage.setItem('em_config_' + telefoneLogado, JSON.stringify(config));
+            localStorage.setItem('em_data_' + telefoneLogado, JSON.stringify(orcamento));
         }
 
         function toggleParcelas() {
@@ -299,15 +385,12 @@ html_final = """
             showToast("Modo Edição");
         }
 
-        // FUNÇÃO NOVA: CALCULA O SALDO DO CLIENTE
         function calcularSaldo() {
             const budget = parseFloat(document.getElementById('input-orcamento-cliente').value) || 0;
             const display = document.getElementById('saldo-display');
-
             if (budget > 0) {
                 display.classList.remove('hidden');
                 const diferenca = budget - totalAtual;
-
                 if (diferenca >= 0) {
                     display.className = 'mt-4 text-sm font-bold p-3 rounded-xl bg-green-500/20 text-green-400 border border-green-500/30 text-center transition-all';
                     display.innerText = `✅ Sobram: R$ ${diferenca.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
@@ -315,14 +398,12 @@ html_final = """
                     display.className = 'mt-4 text-sm font-bold p-3 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 text-center transition-all';
                     display.innerText = `⚠️ Passou do Limite: R$ ${Math.abs(diferenca).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                 }
-            } else {
-                display.classList.add('hidden');
-            }
+            } else { display.classList.add('hidden'); }
         }
 
         function atualizarUI() {
             const lista = document.getElementById('lista-real');
-            totalAtual = 0; // Zera o total para recalcular
+            totalAtual = 0;
 
             if(orcamento.length === 0) {
                 lista.innerHTML = '<p class="text-gray-400 text-center py-4 italic text-sm">Sua lista está vazia</p>';
@@ -349,8 +430,8 @@ html_final = """
             document.getElementById('total-display').innerText = "R$ " + totalAtual.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('itens-count').innerText = orcamento.length + " serviços";
 
-            // Recalcula o saldo sempre que a UI atualizar
             calcularSaldo();
+            salvarSessao();
         }
 
         function showToast(msg) {
@@ -381,7 +462,6 @@ html_final = """
             doc.setFontSize(14); doc.setTextColor(30, 41, 59);
             doc.text(`TOTAL FINAL: ${document.getElementById('total-display').innerText}`, 20, finalY);
 
-            // INCLUI O SALDO NO PDF SE O CLIENTE DEU O ORÇAMENTO
             if(budget > 0) {
                 finalY += 10;
                 doc.setFontSize(12);
@@ -389,10 +469,10 @@ html_final = """
                 finalY += 8;
                 const diferenca = budget - totalAtual;
                 if(diferenca >= 0) {
-                    doc.setTextColor(0, 128, 0); // Verde
+                    doc.setTextColor(0, 128, 0);
                     doc.text(`Saldo Restante: R$ ${diferenca.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, finalY);
                 } else {
-                    doc.setTextColor(200, 0, 0); // Vermelho
+                    doc.setTextColor(200, 0, 0);
                     doc.text(`Valor Excedente: R$ ${Math.abs(diferenca).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, finalY);
                 }
             }
