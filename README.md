@@ -1,29 +1,45 @@
-# 💍 EventMaster Pro v52.0
+<h1 align="center">💍 EventMaster Pro</h1>
+<p align="center">
+  <strong>Smart event budget management system — live on the web</strong>
+</p>
+<p align="center">
+  <a href="https://orcamento-eventos-pro.streamlit.app/">
+    <img src="https://img.shields.io/badge/Live%20Demo-Click%20Here-brightgreen?style=for-the-badge&logo=streamlit" />
+  </a>
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" />
+</p>
 
-> **Sistema inteligente de gestão de orçamentos para eventos sociais e corporativos.**
+---
 
-Desenvolvido como projeto prático para o curso de **Análise e Desenvolvimento de Sistemas (Estácio)**, o EventMaster Pro ajuda organizadores e noivos a controlarem custos de forma profissional, com cálculos automáticos de juros e geração de relatórios em PDF.
+## 🚀 Live Demo
 
-## 🚀 Acesse o Aplicativo Online
-👉 [**CLIQUE AQUI PARA TESTAR O EVENTMASTER PRO**](https://orcamento-eventos-pro.streamlit.app/)
+👉 **[https://orcamento-eventos-pro.streamlit.app/](https://orcamento-eventos-pro.streamlit.app/)**
 
 ---
 
-## ✨ Principais Funcionalidades
-* **Gestão de Itens:** Adicione Buffet, Salão, Vestido e outros serviços com valores brutos.
-* **Cálculo de Parcelamento:** Simulação de juros totais e valor das parcelas em tempo real.
-* **Controle de Saldo:** Monitoramento do limite de gastos para evitar estouro de orçamento.
-* **Exportação em PDF:** Gere um orçamento profissional formatado para enviar via WhatsApp ou E-mail.
-* **Interface Responsiva:** Otimizado para uso em computadores e dispositivos móveis.
+## 📌 What it does
 
-## 🛠️ Tecnologias Utilizadas
-* **Python**: Linguagem base do projeto.
-* **Streamlit**: Framework para criação da interface web moderna.
-* **FPDF**: Biblioteca para geração dinâmica de documentos PDF.
-* **GitHub & Streamlit Cloud**: Ferramentas de versionamento e hospedagem (CI/CD).
+EventMaster Pro helps event organizers and wedding planners control costs professionally — with automatic interest calculations, real-time budget monitoring, and PDF report generation.
 
-## 👤 Desenvolvedor
-**Danilo de Oliveira Guimarães** *Graduando em ADS - Estácio de Sá (Rio de Janeiro)*
+| Feature | Description |
+|---|---|
+| 📋 Item management | Add services (catering, venue, dress) with full pricing |
+| 💳 Installment calculator | Real-time interest and monthly payment simulation |
+| 💰 Budget control | Live balance monitoring to prevent overspending |
+| 📄 PDF export | Generate professional quotes to send via WhatsApp or email |
+| 📱 Responsive UI | Optimized for both desktop and mobile |
 
 ---
-*Este projeto demonstra competências em lógica de programação, manipulação de estados (Session State), integração com APIs de documentos e deploy em nuvem.*
+
+## 🛠️ Tech stack
+
+- **Python** — core logic
+- **Streamlit** — modern web interface framework
+- **FPDF** — dynamic PDF generation
+- **Streamlit Cloud** — CI/CD deployment pipeline
+
+---
+
+## 🏃 How to run locally
+```bash
