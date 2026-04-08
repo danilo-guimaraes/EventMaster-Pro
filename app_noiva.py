@@ -814,7 +814,7 @@ button[onclick*="gerarPDF"]:hover, .bg-green-600:hover {
   backdrop-filter: blur(10px) !important;
   background:
     linear-gradient(135deg, rgba(32, 9, 16, 0.82), rgba(74, 15, 30, 0.68)),
-    url('https://images.unsplash.com/photo-1519167758481-83f29f0a7f5b?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat !important;
+    url('https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat !important;
 }
 
 .event-photo-card {
@@ -1531,13 +1531,13 @@ body {
             iconClass: 'fa-solid fa-people-group'
           },
           buffet: {
-            image: 'https://images.unsplash.com/photo-1555244162-33adf7a9a7f4?auto=format&fit=crop&w=1400&q=80',
+            image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1400&q=80',
             badge: 'Gastronomia',
             subtitle: 'Menus e experiências',
             iconClass: 'fa-solid fa-utensils'
           },
           salao: {
-            image: 'https://images.unsplash.com/photo-1519167758481-83f29f0a7f5b?auto=format&fit=crop&w=1400&q=80',
+            image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1400&q=80',
             badge: 'Espaço',
             subtitle: 'Ambiente e estrutura',
             iconClass: 'fa-solid fa-building'
@@ -1555,7 +1555,7 @@ body {
             iconClass: 'fa-solid fa-camera'
           },
           decor: {
-            image: 'https://images.unsplash.com/photo-1519741497674-2c2b5d7b7d82?auto=format&fit=crop&w=1400&q=80',
+            image: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=1400&q=80',
             badge: 'Cenografia',
             subtitle: 'Florais e ambientação',
             iconClass: 'fa-solid fa-leaf'
