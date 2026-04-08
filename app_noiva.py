@@ -1053,53 +1053,32 @@ button[onclick*="gerarPDF"]:hover, .bg-green-600:hover {
 .hero-visual {
   position: relative;
   z-index: 1;
-  min-height: 360px;
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 14px;
-}
-
-.hero-image-main,
-.hero-image-secondary,
-.hero-image-tertiary {
-  border-radius: 24px;
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.22);
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
 }
 
 .hero-image-main {
-  background-image: linear-gradient(180deg, rgba(14,14,14,0.06), rgba(14,14,14,0.30)), url('https://images.unsplash.com/photo-1519167758481-83f29f0a7f5b?auto=format&fit=crop&w=1400&q=80');
+  width: min(100%, 430px);
+  min-height: 340px;
+  aspect-ratio: 4 / 5;
+  border-radius: 24px;
+  background-size: cover;
+  background-position: center 42%;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.22);
+  background-image: linear-gradient(180deg, rgba(14,14,14,0.06), rgba(14,14,14,0.30)), url('https://images.unsplash.com/photo-1478146896981-b80fe463b330?auto=format&fit=crop&w=1800&q=80');
 }
 
-.hero-image-secondary {
-  background-image: linear-gradient(180deg, rgba(14,14,14,0.06), rgba(14,14,14,0.30)), url('https://images.unsplash.com/photo-1523438097201-512ae7d59d63?auto=format&fit=crop&w=1200&q=80');
-}
-
-.hero-image-tertiary {
-  background-image: linear-gradient(180deg, rgba(14,14,14,0.06), rgba(14,14,14,0.30)), url('https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=1200&q=80');
-}
-
-.hero-image-main,
-.hero-image-secondary,
-.hero-image-tertiary {
+.hero-image-main {
   position: relative;
   overflow: hidden;
 }
 
-.hero-image-main::after,
-.hero-image-secondary::after,
-.hero-image-tertiary::after {
+.hero-image-main::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(44,12,20,0.18));
-}
-
-.hero-photo-stack {
-  display: grid;
-  gap: 14px;
-  grid-template-rows: 1fr 0.55fr;
 }
 
 .hero-photo-caption {
@@ -1276,8 +1255,13 @@ button[onclick*="gerarPDF"]:hover, .bg-green-600:hover {
   }
 
   .hero-visual {
+    justify-content: center;
+  }
+
+  .hero-image-main {
+    width: min(100%, 640px);
+    aspect-ratio: 16 / 10;
     min-height: 300px;
-    grid-template-columns: 1fr;
   }
 }
 
@@ -1361,7 +1345,6 @@ body {
           </div>
           <div class="max-w-md">
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/20 border border-white/10 backdrop-blur-md text-[10px] font-bold uppercase tracking-[0.3em] text-white/80 mb-4">
-              <i class="fa-solid fa-camera-retro"></i>
               Casamento e eventos
             </div>
             <h2 class="font-display text-4xl md:text-5xl leading-[0.92] max-w-[12ch]">Imagens com atmosfera de evento real.</h2>
@@ -1443,19 +1426,7 @@ body {
           </div>
         </div>
         <div class="hero-visual">
-          <div class="hero-image-main">
-                <div class="hero-photo-caption">
-              <div>
-                <strong>Destaque visual</strong>
-                <span>Imagens, tipografia e contraste alinhados para um visual elegante.</span>
-              </div>
-              <span class="hero-photo-dot"></span>
-            </div>
-          </div>
-          <div class="hero-photo-stack">
-            <div class="hero-image-secondary"></div>
-            <div class="hero-image-tertiary"></div>
-          </div>
+          <div class="hero-image-main"></div>
         </div>
       </section>
 

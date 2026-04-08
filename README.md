@@ -1,45 +1,85 @@
-<h1 align="center">💍 EventMaster Pro</h1>
-<p align="center">
-  <strong>Smart event budget management system — live on the web</strong>
-</p>
-<p align="center">
-  <a href="https://orcamento-eventos-pro.streamlit.app/">
-    <img src="https://img.shields.io/badge/Live%20Demo-Click%20Here-brightgreen?style=for-the-badge&logo=streamlit" />
-  </a>
-  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" />
-</p>
+# EventMaster Pro
 
----
+Professional event budget planner built with Streamlit and a custom web interface.
 
-## 🚀 Live Demo
+The application is designed for planners who need fast quote assembly, clean financial visibility, and polished client-facing output.
 
-👉 **[https://orcamento-eventos-pro.streamlit.app/](https://orcamento-eventos-pro.streamlit.app/)**
+## Live Application
 
----
+https://orcamento-eventos-pro.streamlit.app/
 
-## 📌 What it does
+## Key Capabilities
 
-EventMaster Pro helps event organizers and wedding planners control costs professionally — with automatic interest calculations, real-time budget monitoring, and PDF report generation.
+- Centralized event setup (client/event name and event type)
+- Service-based quote builder with editable line items
+- Flat-rate and installment calculations with monthly interest
+- Real-time total and remaining balance against available budget
+- PDF proposal export for sharing with clients
+- Session persistence in browser localStorage for quick continuity
+- Responsive premium UI for desktop and mobile
 
-| Feature | Description |
-|---|---|
-| 📋 Item management | Add services (catering, venue, dress) with full pricing |
-| 💳 Installment calculator | Real-time interest and monthly payment simulation |
-| 💰 Budget control | Live balance monitoring to prevent overspending |
-| 📄 PDF export | Generate professional quotes to send via WhatsApp or email |
-| 📱 Responsive UI | Optimized for both desktop and mobile |
+## Technology Stack
 
----
+### Backend / App Host
 
-## 🛠️ Tech stack
+- Python 3
+- Streamlit 1.56.0
 
-- **Python** — core logic
-- **Streamlit** — modern web interface framework
-- **FPDF** — dynamic PDF generation
-- **Streamlit Cloud** — CI/CD deployment pipeline
+### Frontend Layer (embedded in Streamlit)
 
----
+- HTML5 + CSS3
+- JavaScript (Vanilla)
+- Tailwind CSS (CDN)
+- Font Awesome 6 (icons)
+- Google Fonts
 
-## 🏃 How to run locally
+### Document Generation
+
+- jsPDF
+- jsPDF-AutoTable
+
+### Runtime / Data
+
+- Browser localStorage for session and quote state
+- Unsplash assets for curated visual media
+
+### Python Dependencies
+
+- streamlit
+- fpdf
+- requests
+
+## Project Structure
+
+- `app_noiva.py`: Main production app (Streamlit + embedded HTML/CSS/JS)
+- `EventMaster.py`: Alternate app entry/module in repository
+- `app_noiva_backup.py`: Backup snapshot for recovery/reference
+- `requirements.txt`: Python dependencies
+
+## Running Locally
+
+1. Clone the repository.
+2. Create and activate a virtual environment.
+3. Install dependencies.
+4. Start Streamlit.
+
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+streamlit run app_noiva.py
+```
+
+Then open the local URL shown in your terminal (usually `http://localhost:8501`).
+
+## Recent Improvements
+
+- Refined hero section with a cleaner, proportional single-image layout
+- Removed distracting visual overlays for a more premium composition
+- Improved responsive behavior to prevent stretched visuals on wide screens
+- Upgraded visual consistency across cards, buttons, and modal sections
+- Updated dependency pinning to Streamlit 1.56.0
+
+## License
+
+This project is distributed for portfolio and product demonstration purposes.
