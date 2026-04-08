@@ -849,7 +849,17 @@ button[onclick*="gerarPDF"]:hover, .bg-green-600:hover {
 }
 
 .budget-summary-total {
-  color: var(--burgundy-deep) !important;
+  color: var(--burgundy) !important;
+  background: rgba(201,168,76,0.14) !important;
+  border: 1px solid rgba(201,168,76,0.26) !important;
+  border-radius: 16px !important;
+  display: inline-block !important;
+  padding: 10px 18px !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.35) !important;
+}
+
+#total-display {
+  color: var(--burgundy) !important;
 }
 
 .budget-summary-input {
@@ -1066,7 +1076,7 @@ button[onclick*="gerarPDF"]:hover, .bg-green-600:hover {
   background-size: cover;
   background-position: center 42%;
   box-shadow: 0 16px 40px rgba(0,0,0,0.22);
-  background-image: linear-gradient(180deg, rgba(14,14,14,0.06), rgba(14,14,14,0.30)), url('https://images.unsplash.com/photo-1478146896981-b80fe463b330?auto=format&fit=crop&w=1800&q=80');
+  background-image: linear-gradient(180deg, rgba(14,14,14,0.06), rgba(14,14,14,0.30)), url('https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1800&q=80');
 }
 
 .hero-image-main {
@@ -1405,7 +1415,7 @@ body {
                 </div>
             </div>
             <div class="flex gap-2">
-          <button onclick="abrirConfig()" class="btn-secondary p-2 md:px-5 hidden sm:flex items-center gap-2"><i class="fa-solid fa-gear action-icon"></i><span>Editar Título</span></button>
+          <button onclick="abrirConfig()" class="btn-secondary p-2 md:px-5 hidden sm:flex items-center gap-2"><i class="fa-solid fa-gear action-icon"></i><span>Editar tipo de evento</span></button>
           <button onclick="sairSessao()" class="btn-danger p-2 md:px-5 flex items-center gap-2"><i class="fa-solid fa-right-from-bracket action-icon"></i> <span class="hidden sm:inline">Sair</span></button>
             </div>
         </header>
@@ -1417,7 +1427,7 @@ body {
           <p>Construa ofertas com imagens profissionais, leitura clara e botões mais elegantes para apresentar ao cliente com credibilidade.</p>
           <div class="hero-actions">
             <button onclick="document.getElementById('grid-servicos').scrollIntoView({behavior:'smooth', block:'start'})" class="btn-primary btn-hero px-5 py-4">Explorar serviços</button>
-            <button onclick="abrirConfig()" class="btn-secondary px-5 py-4">Editar identidade</button>
+            <button onclick="abrirConfig()" class="btn-secondary px-5 py-4">Editar tipo de evento</button>
           </div>
           <div class="hero-stats">
             <div class="hero-stat"><strong>8+</strong><span>Categorias premium</span></div>
@@ -1605,6 +1615,7 @@ body {
         let totalAtual = 0;
         let telefoneLogado = null;
         let isEditandoConfig = false;
+        const LAST_PHONE_KEY = 'em_last_phone';
 
         document.getElementById('input-celular').addEventListener('input', function (e) {
             let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
@@ -1640,6 +1651,7 @@ body {
         function sairSessao() {
             telefoneLogado = null;
             isEditandoConfig = false;
+          localStorage.removeItem(LAST_PHONE_KEY);
             document.getElementById('input-celular').value = '';
             document.getElementById('container-celular').classList.remove('hidden');
             document.getElementById('btn-modal').innerText = "Entrar no Sistema →";
@@ -1650,25 +1662,46 @@ body {
             atualizarUI();
         }
 
+        function carregarSessaoPorTelefone(celularRaw) {
+          const savedData = localStorage.getItem('em_data_' + celularRaw);
+          const savedConfig = localStorage.getItem('em_config_' + celularRaw);
+          if(!savedConfig) return false;
+
+          telefoneLogado = celularRaw;
+          localStorage.setItem(LAST_PHONE_KEY, celularRaw);
+
+          try {
+            orcamento = savedData ? JSON.parse(savedData) : [];
+          } catch (e) {
+            orcamento = [];
+          }
+
+          const cfg = JSON.parse(savedConfig);
+          document.getElementById('display-titulo').innerText = cfg.nome || 'Cliente Master';
+          document.getElementById('display-sub').innerText = cfg.tipo || 'Evento Especial';
+          document.getElementById('header-icon').innerHTML = getEventIconMarkup(cfg.tipo || 'Casamento');
+          document.getElementById('input-orcamento-cliente').value = cfg.budget || '';
+          document.getElementById('input-nome').value = cfg.nome || '';
+
+          document.getElementById('config-modal').classList.add('hidden');
+          document.getElementById('main-app').classList.remove('hidden');
+          isEditandoConfig = false;
+          renderGrid();
+          atualizarUI();
+          return true;
+        }
+
         function iniciarApp() {
             if (!isEditandoConfig) {
                 const celularRaw = document.getElementById('input-celular').value.replace(/\D/g, '');
                 if(celularRaw.length !== 11) return alert("Por favor, digite um celular válido com DDD (Ex: 21988887777).");
-                telefoneLogado = celularRaw;
+            const recuperouSessao = carregarSessaoPorTelefone(celularRaw);
 
-                const savedData = localStorage.getItem('em_data_' + telefoneLogado);
-                const savedConfig = localStorage.getItem('em_config_' + telefoneLogado);
-
-                if(savedData && savedConfig) {
-                    orcamento = JSON.parse(savedData);
-                    const cfg = JSON.parse(savedConfig);
-                    document.getElementById('display-titulo').innerText = cfg.nome;
-                    document.getElementById('display-sub').innerText = cfg.tipo;
-                    document.getElementById('header-icon').innerHTML = getEventIconMarkup(cfg.tipo || 'Casamento');
-                    document.getElementById('input-orcamento-cliente').value = cfg.budget || '';
-                    document.getElementById('input-nome').value = cfg.nome; 
+            if(recuperouSessao) {
                     showToast("Sessão recuperada!");
                 } else {
+              telefoneLogado = celularRaw;
+              localStorage.setItem(LAST_PHONE_KEY, celularRaw);
                     aplicarConfigDaTela();
                     orcamento = [];
                     showToast("Sessão iniciada!");
@@ -1893,6 +1926,13 @@ body {
           t.innerHTML = '<i class="fa-solid fa-circle-check status-icon"></i> ' + msg;
             t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000);
         }
+
+        (function bootSessaoPersistida() {
+          const ultimoTelefone = (localStorage.getItem(LAST_PHONE_KEY) || '').replace(/\D/g, '');
+          if(ultimoTelefone.length === 11) {
+            carregarSessaoPorTelefone(ultimoTelefone);
+          }
+        })();
 
         function gerarPDF() {
             const { jsPDF } = window.jspdf;
