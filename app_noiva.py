@@ -1936,47 +1936,168 @@ body {
 
         function gerarPDF() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            const doc = new jsPDF({ unit: 'mm', format: 'a4' });
             const nomeE = document.getElementById('display-titulo').innerText;
             const tipoE = document.getElementById('display-sub').innerText;
             const budget = parseFloat(document.getElementById('input-orcamento-cliente').value) || 0;
 
-            doc.setFillColor(30, 41, 59); doc.rect(0, 0, 210, 40, 'F');
-            doc.setTextColor(212, 160, 23); doc.setFontSize(22); doc.text("EVENTMASTER PRO", 20, 25);
-            doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.text(`PROPOSTA: ${nomeE} | ${tipoE.toUpperCase()}`, 20, 33);
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const colors = {
+              burgundyDeep: [44, 12, 20],
+              burgundy: [107, 29, 46],
+              burgundySoft: [138, 52, 73],
+              gold: [201, 168, 76],
+              goldSoft: [245, 232, 200],
+              textDark: [50, 38, 38],
+              textMuted: [120, 103, 103],
+              white: [255, 255, 255],
+              line: [230, 218, 205]
+            };
+
+            const moeda = (valor) => `R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            const dataGeracao = new Date().toLocaleDateString('pt-BR');
+
+            doc.setFillColor(...colors.burgundyDeep);
+            doc.rect(0, 0, pageWidth, 34, 'F');
+            doc.setFillColor(...colors.burgundy);
+            doc.rect(0, 34, pageWidth, 12, 'F');
+            doc.setFillColor(...colors.gold);
+            doc.rect(0, 46, pageWidth, 2, 'F');
+
+            doc.setTextColor(...colors.gold);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(24);
+            doc.text('EVENTMASTER PRO', 14, 18);
+
+            doc.setTextColor(...colors.white);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('PROPOSTA DE ORCAMENTO', 14, 29);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text(`Cliente/Evento: ${nomeE}`, 14, 41);
+            doc.text(`Tipo: ${tipoE}`, 14, 46);
+            doc.text(`Data de emissao: ${dataGeracao}`, pageWidth - 64, 41);
+            doc.text(`Itens no resumo: ${orcamento.length}`, pageWidth - 64, 46);
+
+            doc.setDrawColor(...colors.line);
+            doc.setLineWidth(0.3);
+            doc.line(14, 56, pageWidth - 14, 56);
 
             const rows = orcamento.map(i => {
                 let txtCalc = i.id === 'convidados' ? `${i.qtd}x R$ ${i.valorUnit.toLocaleString('pt-BR', {minimumFractionDigits: 2})} ` : '';
                 txtCalc += i.modo === 'avista' ? '(À vista)' : `| ${i.vezes}x de R$ ${i.valorParcela.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (juros ${i.juros}%)`;
-                return [i.nome, txtCalc, `R$ ${i.valorFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`];
+                return [i.nome, txtCalc, moeda(i.valorFinal)];
             });
 
             doc.autoTable({ 
-                startY: 50, 
+                startY: 62,
+                margin: { left: 14, right: 14 },
                 head: [['Serviço', 'Condições e Cálculo', 'Total Final']], 
                 body: rows, 
-                headStyles: { fillColor: [212, 160, 23] },
-                styles: { fontSize: 9, cellPadding: 4 },
-                alternateRowStyles: { fillColor: [250, 250, 250] }
+                headStyles: {
+                  fillColor: colors.burgundy,
+                  textColor: colors.white,
+                  fontStyle: 'bold',
+                  fontSize: 10,
+                  halign: 'left',
+                  cellPadding: 4
+                },
+                styles: {
+                  fontSize: 9,
+                  textColor: colors.textDark,
+                  lineColor: colors.line,
+                  lineWidth: 0.2,
+                  cellPadding: 4,
+                  valign: 'middle'
+                },
+                alternateRowStyles: { fillColor: [252, 248, 242] },
+                columnStyles: {
+                  0: { cellWidth: 42 },
+                  1: { cellWidth: 98 },
+                  2: { cellWidth: 36, halign: 'right', fontStyle: 'bold' }
+                }
             });
 
-            let finalY = doc.lastAutoTable.finalY + 15;
-            doc.setFontSize(14); doc.setTextColor(30, 41, 59);
-            doc.text(`TOTAL DA PROPOSTA: ${document.getElementById('total-display').innerText}`, 20, finalY);
+            let finalY = doc.lastAutoTable.finalY + 10;
+            if (finalY > pageHeight - 50) {
+              doc.addPage();
+              finalY = 26;
+            }
+
+            doc.setFillColor(...colors.goldSoft);
+            doc.roundedRect(14, finalY, pageWidth - 28, 20, 3, 3, 'F');
+            doc.setDrawColor(...colors.gold);
+            doc.setLineWidth(0.4);
+            doc.roundedRect(14, finalY, pageWidth - 28, 20, 3, 3, 'S');
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.setTextColor(...colors.burgundy);
+            doc.text('TOTAL DA PROPOSTA', 18, finalY + 8);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.text(moeda(totalAtual), pageWidth - 18, finalY + 13, { align: 'right' });
 
             if(budget > 0) {
-                finalY += 10;
+                finalY += 28;
+                if (finalY > pageHeight - 42) {
+                  doc.addPage();
+                  finalY = 24;
+                }
+
+                doc.setFont('helvetica', 'bold');
                 doc.setFontSize(11);
-                doc.text(`Caixa Inicial do Cliente: R$ ${budget.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`, 20, finalY);
+                doc.setTextColor(...colors.burgundy);
+                doc.text('RESUMO FINANCEIRO', 14, finalY);
                 finalY += 7;
+
+                doc.setFillColor(250, 247, 241);
+                doc.roundedRect(14, finalY, pageWidth - 28, 24, 3, 3, 'F');
+                doc.setDrawColor(...colors.line);
+                doc.roundedRect(14, finalY, pageWidth - 28, 24, 3, 3, 'S');
+
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(10);
+                doc.setTextColor(...colors.textMuted);
+                doc.text('Caixa disponivel do cliente', 18, finalY + 8);
+                doc.text('Total planejado no evento', 18, finalY + 17);
+                doc.setTextColor(...colors.textDark);
+                doc.setFont('helvetica', 'bold');
+                doc.text(moeda(budget), pageWidth - 18, finalY + 8, { align: 'right' });
+                doc.text(moeda(totalAtual), pageWidth - 18, finalY + 17, { align: 'right' });
+
+                finalY += 33;
                 const diferenca = budget - totalAtual;
                 if(diferenca >= 0) {
-                    doc.setTextColor(0, 150, 0);
-                    doc.text(`Saldo Restante: R$ ${diferenca.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (Dentro do Orçamento)`, 20, finalY);
+                    doc.setFillColor(232, 245, 236);
+                    doc.roundedRect(14, finalY - 5, pageWidth - 28, 10, 2, 2, 'F');
+                    doc.setTextColor(24, 120, 72);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(10);
+                    doc.text(`Caixa livre: ${moeda(diferenca)} (dentro do orcamento)`, 18, finalY + 1);
                 } else {
-                    doc.setTextColor(200, 0, 0);
-                    doc.text(`Valor Excedente: R$ ${Math.abs(diferenca).toLocaleString('pt-BR', {minimumFractionDigits: 2})} (Acima do Orçamento)`, 20, finalY);
+                    doc.setFillColor(255, 236, 236);
+                    doc.roundedRect(14, finalY - 5, pageWidth - 28, 10, 2, 2, 'F');
+                    doc.setTextColor(178, 45, 45);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(10);
+                    doc.text(`Excedente: ${moeda(Math.abs(diferenca))} (acima do orcamento)`, 18, finalY + 1);
                 }
+            }
+
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let page = 1; page <= totalPages; page++) {
+              doc.setPage(page);
+              doc.setDrawColor(...colors.line);
+              doc.line(14, pageHeight - 14, pageWidth - 14, pageHeight - 14);
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(8.5);
+              doc.setTextColor(...colors.textMuted);
+              doc.text('EventMaster Pro - Planejamento e orcamento de eventos', 14, pageHeight - 9);
+              doc.text(`Pagina ${page} de ${totalPages}`, pageWidth - 14, pageHeight - 9, { align: 'right' });
             }
 
             doc.save(`Proposta_${nomeE.replace(/ /g, '_')}.pdf`);
