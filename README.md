@@ -8,6 +8,10 @@ The application is designed for planners who need fast quote assembly, clean fin
 
 https://orcamento-eventos-pro.streamlit.app/
 
+## Documentation
+
+- Beginner-friendly bilingual code guide (PT-BR / EN): [GUIA_DO_CODIGO_PT_EN.md](GUIA_DO_CODIGO_PT_EN.md)
+
 ## Key Capabilities
 
 - Centralized event setup (client/event name and event type)
@@ -46,8 +50,6 @@ https://orcamento-eventos-pro.streamlit.app/
 ### Python Dependencies
 
 - streamlit
-- fpdf
-- requests
 
 ## Project Structure
 
